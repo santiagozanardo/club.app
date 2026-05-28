@@ -52,16 +52,38 @@ export default function PlantelesPage() {
       setLoading(false)
       return
     }
+    // PLANTELES ASOCIADOS AL USUARIO
+const { data: plantelesUsuario } =
+  await supabase
+    .from('plantel_usuario')
+    .select('plantelid')
+    .eq('usuario', user.id)
+
+const plantelIds =
+  (plantelesUsuario ?? []).map(
+    (p) => p.plantelid
+  )
 
     setClienteId(profile.clienteid)
 
-    const { data } = await supabase
-      .from('plantel')
-      .select('*')
-      .eq('clienteid', profile.clienteid)
-      .order('anio', {
-        ascending: false
-      })
+   let query = supabase
+  .from('plantel')
+  .select('*')
+  .eq('clienteid', profile.clienteid)
+  .order('anio', {
+    ascending: false
+  })
+
+// SI TIENE PLANTELES ASOCIADOS,
+// MOSTRAR SOLO ESOS
+if (plantelIds.length > 0) {
+  query = query.in(
+    'plantelid',
+    plantelIds
+  )
+}
+
+const { data } = await query
 
     setPlanteles(data ?? [])
     setLoading(false)
