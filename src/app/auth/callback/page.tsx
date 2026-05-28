@@ -37,7 +37,7 @@ export default function AuthCallbackPage() {
                 nombre: user.user_metadata.given_name || '',
                 apellido: user.user_metadata.family_name || '',
                 mail: user.email,
-                rol
+                rol: ''
               })
               .select()
               .single()
