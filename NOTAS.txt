@@ -1,0 +1,30 @@
+BASE DE DATOS
+club
+u1umNXvPoOGw5SGp
+
+
+Crear campos combinados unicos
+ALTER TABLE public.plantel
+ADD CONSTRAINT "uk_plantel1"
+UNIQUE (categoria,anio);
+
+
+
+Crear app en next.js
+En terminal, en el directorio donde se quiere crear el proyecto:
+npx create-next-app@latest gastos-app
+
+Se crea el directorio gastos-app. Dentro de ese directorio, instalar la BD:
+npm install @supabase/supabase-js
+
+En Supabase > Proyecto > Project Settings > 
+	API Keys > Legacy anon, service_role API Keys > Copiar api key anon public:
+	eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRsdmhva2lza3BkcGl6bGVzemlqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg3MzI3NzIsImV4cCI6MjA5NDMwODc3Mn0.L4xE7op5l7Bdz7tRK9inxRLV-YSqpIzndxNFRaRuRoc
+	Data API > API Url (hasta .co)
+	https://dlvhokiskpdpizleszij.supabase.co
+
+Crear archivo .env.local en el directorio. Contendra las credenciales del supabase.
+
+Crear archivo supabase.ts en directorio > src > lib
+
+Modificar el archivo del directorio > src > app > page.tsx (agregando la conexion a supabase)
