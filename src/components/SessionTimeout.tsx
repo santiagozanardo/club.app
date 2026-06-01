@@ -12,7 +12,7 @@ export default function SessionTimeout() {
   )
 
   const TIEMPO_INACTIVIDAD =
-    10 * 1000 // 30 minutos
+    30 * 60 * 1000 // 30 minutos
 
   const resetTimer = () => {
     if (timeoutRef.current) {
