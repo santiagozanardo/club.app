@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import Topbar from '@/src/components/Topbar'
+import SessionTimeout from '@/src/components/SessionTimeout'
 
 export default function LayoutContent({
   children
@@ -16,7 +17,12 @@ export default function LayoutContent({
 
   return (
     <>
-      {!hideTopbar && <Topbar />}
+      {!hideTopbar && (
+        <>
+          <SessionTimeout />
+          <Topbar />
+        </>
+      )}
 
       <main className={!hideTopbar ? 'pt-16' : ''}>
         {children}
