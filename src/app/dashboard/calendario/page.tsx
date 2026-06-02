@@ -962,8 +962,7 @@ export default function CalendarioGeneralPage() {
     )
 
   const todayString = new Date()
-    .toISOString()
-    .split('T')[0]
+    .toLocaleDateString('sv-SE')
 
   const plantelesMap = useMemo(() => {
     const map: any = {}
