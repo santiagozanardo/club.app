@@ -388,6 +388,22 @@ export default function Topbar() {
                     </span>
                     </Link>
 
+                    <Link
+                    href="/dashboard/lesiones"
+                    className="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-gray-100 transition"
+                    onClick={() => setMenuOpen(false)}
+                    >
+                    <img
+                        src="/img/medico.png"
+                        alt="lesiones"
+                        className="w-5 h-5 object-contain"
+                    />
+
+                    <span>
+                        Lesiones
+                    </span>
+                    </Link>
+
                     
 
                     <Link
