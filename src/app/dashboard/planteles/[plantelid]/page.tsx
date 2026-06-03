@@ -620,7 +620,7 @@ transition-all
                   abrirModal(p.persona)
                 }
               >
-                <td className="p-4 text-center">
+                <td className="text-center">
   {jugadoresLesionados.includes(
     Number(p.persona?.personaid)
   ) && (
