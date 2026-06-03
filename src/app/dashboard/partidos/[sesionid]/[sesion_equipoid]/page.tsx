@@ -28,6 +28,34 @@ export default function ArmadoPage() {
 const [filtroPosicion, setFiltroPosicion] =
   useState('')
 
+  const [lesionesActivas, setLesionesActivas] =
+  useState<Record<number, string>>({})
+
+  const cargarLesiones = async () => {
+
+    const { data } = await supabase
+      .from('lesion')
+      .select(`
+        personaid,
+        estado
+      `)
+  
+    const mapa: Record<number, string> = {}
+  
+    ;(data ?? []).forEach((l) => {
+  
+      if (
+        l.personaid &&
+        l.estado === 'ACTIVA'
+      ) {
+        mapa[l.personaid] = 'ACTIVA'
+      }
+    })
+  
+    setLesionesActivas(mapa)
+  }
+
+  
 const prioridades: Record<number, string[]> = {
   1: ['PILARIZQ', 'PILARDER', 'HOOKER'],
   2: ['HOOKER', 'PILARIZQ', 'PILARDER'],
@@ -57,6 +85,7 @@ const prioridades: Record<number, string[]> = {
       cargar()
       cargarEquipoInfo()
       cargarSesion()
+      cargarLesiones()
     }
   }, [sesionid, sesion_equipoid])
 
@@ -123,6 +152,7 @@ const prioridades: Record<number, string[]> = {
   }
 
   const cargar = async () => {
+
     const { data } = await supabase
       .from('sesion_asistencia')
       .select(`
@@ -138,16 +168,31 @@ const prioridades: Record<number, string[]> = {
         )
       `)
       .eq('sesionid', sesionid)
-
+  
     const all = data ?? []
-
-    setDisponibles(all.filter(p => !p.sesion_equipoid))
-
+  
+    setDisponibles(
+      all.filter(
+        p => !p.sesion_equipoid
+      )
+    )
+  
     setEquipo(
       all
-        .filter(p => p.sesion_equipoid == sesion_equipoid)
-        .sort((a, b) => (a.posicion || 0) - (b.posicion || 0))
+        .filter(
+          p =>
+            p.sesion_equipoid ==
+            sesion_equipoid
+        )
+        .sort(
+          (a, b) =>
+            (a.posicion || 0) -
+            (b.posicion || 0)
+        )
     )
+  
+    // NUEVO
+    await cargarLesiones()
   }
 
   // -------------------------
@@ -384,6 +429,7 @@ const prioridades: Record<number, string[]> = {
                   handleDoubleTapCapitan={handleDoubleTapCapitan}
                   setModalOpen={setModalOpen}
                   setModalPos={setModalPos}
+                  lesionesActivas={lesionesActivas}
                 />
               ))}
             </Row>
@@ -399,6 +445,7 @@ const prioridades: Record<number, string[]> = {
                   handleDoubleTapCapitan={handleDoubleTapCapitan}
                   setModalOpen={setModalOpen}
                   setModalPos={setModalPos}
+                  lesionesActivas={lesionesActivas}
                 />
               ))}
             </Row>
@@ -414,6 +461,7 @@ const prioridades: Record<number, string[]> = {
                   handleDoubleTapCapitan={handleDoubleTapCapitan}
                   setModalOpen={setModalOpen}
                   setModalPos={setModalPos}
+                  lesionesActivas={lesionesActivas}
                 />
               ))}
             </Row>
@@ -429,6 +477,7 @@ const prioridades: Record<number, string[]> = {
                   handleDoubleTapCapitan={handleDoubleTapCapitan}
                   setModalOpen={setModalOpen}
                   setModalPos={setModalPos}
+                  lesionesActivas={lesionesActivas}
                 />
               ))}
             </Row>
@@ -444,6 +493,7 @@ const prioridades: Record<number, string[]> = {
                   handleDoubleTapCapitan={handleDoubleTapCapitan}
                   setModalOpen={setModalOpen}
                   setModalPos={setModalPos}
+                  lesionesActivas={lesionesActivas}
                 />
               ))}
             </Row>
@@ -459,6 +509,7 @@ const prioridades: Record<number, string[]> = {
                   handleDoubleTapCapitan={handleDoubleTapCapitan}
                   setModalOpen={setModalOpen}
                   setModalPos={setModalPos}
+                  lesionesActivas={lesionesActivas}
                 />
               ))}
             </Row>
@@ -506,17 +557,28 @@ const prioridades: Record<number, string[]> = {
                     transition-all
                     "
                 >
-                  <div className="flex flex-col">
-                    <span>
-                      {p.persona?.apellido},
-                      {' '}
-                      {p.persona?.nombre}
-                    </span>
+                  <div className="flex justify-between items-center w-full">
 
-                    <span className="text-gray-400 text-xs">
-                      {p.persona?.posicion || '-'}
-                    </span>
-                  </div>
+                    <div className="flex flex-col">
+                      <span>
+                        {p.persona?.apellido},
+                        {' '}
+                        {p.persona?.nombre}
+                      </span>
+
+                      <span className="text-gray-400 text-xs">
+                        {p.persona?.posicion || '-'}
+                      </span>
+                    </div>
+
+                    {lesionesActivas[p.personaid] && (
+                      <img
+                        src="/img/cruz_roja.png"
+                        className="w-5 h-5"
+                      />
+                    )}
+
+                    </div>
 
                   <button
                     onClick={() => quitar(p)}
@@ -719,11 +781,22 @@ const prioridades: Record<number, string[]> = {
             "
           >
 
-            <div className="font-semibold">
-              {p.persona?.apellido},
-              {' '}
-              {p.persona?.nombre}
-            </div>
+<div className="flex items-center justify-between">
+
+<div className="font-semibold">
+  {p.persona?.apellido},
+  {' '}
+  {p.persona?.nombre}
+</div>
+
+{lesionesActivas[p.personaid] && (
+  <img
+    src="/img/cruz_roja.png"
+    className="w-5 h-5"
+  />
+)}
+
+</div>
 
             <div className="text-xs text-gray-500 mt-1">
               {p.persona?.posicion || '-'}
@@ -759,7 +832,8 @@ function Cell({
   toggleCapitan,
   handleDoubleTapCapitan,
   setModalOpen,
-  setModalPos
+  setModalPos,
+  lesionesActivas
 }: any) {
 
   const [clicks, setClicks] = useState(0)
@@ -814,6 +888,20 @@ const handleCellClick = async () => {
         <div className="absolute top-1 right-1 text-yellow-400 font-black text-lg leading-none">
           ©
         </div>
+      )}
+
+      {player &&
+        lesionesActivas[player.personaid] && (
+          <img
+            src="/img/cruz_roja.png"
+            className="
+              absolute
+              top-1
+              left-1
+              w-4
+              h-4
+            "
+          />
       )}
 
       <div className="text-[9px] text-gray-500">
