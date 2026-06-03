@@ -33,6 +33,9 @@ const POSICIONES = [
 export default function PlantelPersonasPage() {
   const { plantelid } = useParams()
 
+  const [jugadoresLesionados, setJugadoresLesionados] =
+  useState<number[]>([])
+
   const plantelidNumber = Number(plantelid)
 
   const [plantel, setPlantel] =
@@ -128,6 +131,18 @@ export default function PlantelPersonasPage() {
       .order('apellido')
 
     setPersonasDisponibles(data ?? [])
+  }
+
+  const cargarLesionados = async () => {
+
+    const { data } = await supabase
+      .from('lesion')
+      .select('personaid')
+      .eq('estado', 'ACTIVA')
+  
+    setJugadoresLesionados(
+      (data ?? []).map(l => Number(l.personaid))
+    )
   }
 
   // -------------------------
@@ -325,6 +340,7 @@ export default function PlantelPersonasPage() {
       cargarPlantel()
       cargarPersonasPlantel()
       cargarDisponibles()
+      cargarLesionados()
     }
   }, [plantelid])
 
@@ -455,6 +471,14 @@ transition-all
   hover:scale-[1.01]
   active:scale-[0.99]
   transition-all
+  ${
+    jugadoresLesionados.includes(
+      Number(p.persona?.personaid)
+    )
+      ? 'bg-red-50'
+      : 'bg-white'
+  }
+`}
 "
           >
 
@@ -465,12 +489,24 @@ transition-all
 
               <div>
 
-                <div className="
-                  font-bold text-base
-                ">
-                  {p.persona?.apellido},{' '}
-                  {p.persona?.nombre}
-                </div>
+              <div className="flex items-center gap-2">
+
+              <div className="font-bold text-base">
+                {p.persona?.apellido},{' '}
+                {p.persona?.nombre}
+              </div>
+
+              {jugadoresLesionados.includes(
+                Number(p.persona?.personaid)
+              ) && (
+                <img
+                  src="/img/cruz_roja.png"
+                  alt="Lesionado"
+                  className="w-5 h-5"
+                />
+              )}
+
+              </div>
 
                 <div className="text-sm text-gray-500">
                 {p.persona?.fechanacimiento
@@ -540,7 +576,9 @@ transition-all
             bg-gray-50 border-b
           ">
 
-            <tr>
+              <tr>
+
+              <th className="w-10"></th>
 
               <th className="p-4 text-left">
                 Nombre
@@ -582,7 +620,17 @@ transition-all
                   abrirModal(p.persona)
                 }
               >
-
+                <td className="p-4 text-center">
+  {jugadoresLesionados.includes(
+    Number(p.persona?.personaid)
+  ) && (
+    <img
+      src="/img/cruz_roja.png"
+      alt="Lesionado"
+      className="w-5 h-5 object-contain inline-block"
+    />
+  )}
+</td>
                 <td className="p-4">
                   {p.persona?.nombre}
                 </td>
