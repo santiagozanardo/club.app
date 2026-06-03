@@ -48,17 +48,21 @@ export default function SesionDetallePage() {
 
   const cargarAsistencias = async () => {
     const { data } = await supabase
-      .from('sesion_asistencia')
-      .select(`
-        sesion_asistenciaid,
-        asistencia,
-        personaid,
-        persona:personaid (
-          nombre,
-          apellido
-        )
-      `)
-      .eq('sesionid', sesionid)
+  .from('sesion_asistencia')
+  .select(`
+    sesion_asistenciaid,
+    asistencia,
+    personaid,
+    persona:personaid (
+      nombre,
+      apellido,
+      lesion (
+        lesionid,
+        estado
+      )
+    )
+  `)
+  .eq('sesionid', sesionid)
 
     setAsistencias(data ?? [])
   }
@@ -379,18 +383,42 @@ export default function SesionDetallePage() {
 
           <tbody>
 
-            {asistenciasPaginadas.map((a) => (
+          {asistenciasPaginadas.map((a) => {
+
+          const lesionado =
+            a.persona?.lesion?.some(
+              (l: any) =>
+                l.estado === 'ACTIVA'
+            ) ?? false
+
+          return (
 
               <tr
                 key={a.sesion_asistenciaid}
                 className="border-b"
               >
 
-                <td className="p-4">
+              <td className="p-4">
+
+              <div className="flex items-center gap-2">
+
+                <span>
                   {a.persona?.apellido},
                   {' '}
                   {a.persona?.nombre}
-                </td>
+                </span>
+
+                {lesionado && (
+                  <img
+                    src="/img/cruz_roja.png"
+                    className="w-5 h-5"
+                    title="Jugador lesionado"
+                  />
+                )}
+
+              </div>
+
+              </td>
 
                 <td className="p-4">
 
@@ -472,7 +500,7 @@ export default function SesionDetallePage() {
 
               </tr>
 
-            ))}
+            )})}
 
           </tbody>
 
