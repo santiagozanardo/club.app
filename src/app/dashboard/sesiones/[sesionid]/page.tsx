@@ -425,8 +425,7 @@ export default function SesionDetallePage() {
                     <button
                         onClick={() =>
                         toggleAsistencia(
-                            a.sesion_asistenciaid,
-                            a.asistencia
+                            a.sesion_asistenciaid
                         )
                         }
                         className={`
