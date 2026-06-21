@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { supabase } from '@/src/lib/supabase'
-t
+
 export default function SesionDetallePage() {
   const { sesionid } = useParams()
 
