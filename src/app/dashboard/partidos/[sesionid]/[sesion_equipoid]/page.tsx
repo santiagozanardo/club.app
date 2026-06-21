@@ -11,7 +11,19 @@ export default function ArmadoPage() {
   const [equipo, setEquipo] = useState<any[]>([])
   const [equipoInfo, setEquipoInfo] = useState<any | null>(null)
   const [sesion, setSesion] = useState<any | null>(null)
-
+const [totalEntrenamientosSemana,
+  setTotalEntrenamientosSemana] =
+  useState(0)
+const [asistenciaSemana, setAsistenciaSemana] =
+  useState<
+    Record<
+      number,
+      {
+        asistencias: number
+        total: number
+      }
+    >
+  >({})
   const [lastTap, setLastTap] = useState<{
     id: number | null
     time: number
@@ -30,16 +42,7 @@ const [filtroPosicion, setFiltroPosicion] =
 
   const [lesionesActivas, setLesionesActivas] =
   useState<Record<number, string>>({})
-  const [asistenciaSemana, setAsistenciaSemana] =
-  useState<
-    Record<
-      number,
-      {
-        asistencias: number
-        total: number
-      }
-    >
-  >({})
+  
   const cargarLesiones = async () => {
 
     const { data } = await supabase
@@ -138,9 +141,7 @@ setTotalEntrenamientosSemana(total)
         true
       )
 
-const [totalEntrenamientosSemana,
-  setTotalEntrenamientosSemana] =
-  useState(0)
+
     
   const mapa: Record<
     number,
