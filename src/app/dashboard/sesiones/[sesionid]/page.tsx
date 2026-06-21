@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { supabase } from '@/src/lib/supabase'
-
+t
 export default function SesionDetallePage() {
   const { sesionid } = useParams()
 
@@ -143,29 +143,29 @@ export default function SesionDetallePage() {
   // -----------------------------------
   // TOGGLE
   // -----------------------------------
-  const toggleAsistencia = async (
-    id: number,
-    value: boolean
-  ) => {
+  const toggleAsistencia = async (id: number) => {
+  setAsistencias(prev => {
+    return prev.map(a => {
+      if (a.sesion_asistenciaid !== id) return a
 
-    setAsistencias(prev =>
-      prev.map(a =>
-        a.sesion_asistenciaid === id
-          ? {
-              ...a,
-              asistencia: !value
-            }
-          : a
-      )
-    )
+      const newValue = !a.asistencia
 
-    await supabase
-      .from('sesion_asistencia')
-      .update({
-        asistencia: !value
-      })
-      .eq('sesion_asistenciaid', id)
-  }
+      // update DB async
+      supabase
+        .from('sesion_asistencia')
+        .update({ asistencia: newValue })
+        .eq('sesion_asistenciaid', id)
+        .then(({ error }) => {
+          if (error) console.log(error)
+        })
+
+      return {
+        ...a,
+        asistencia: newValue
+      }
+    })
+  })
+}
 
   // -----------------------------------
   // FILTROS
