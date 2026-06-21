@@ -30,7 +30,16 @@ const [filtroPosicion, setFiltroPosicion] =
 
   const [lesionesActivas, setLesionesActivas] =
   useState<Record<number, string>>({})
-
+  const [asistenciaSemana, setAsistenciaSemana] =
+  useState<
+    Record<
+      number,
+      {
+        asistencias: number
+        total: number
+      }
+    >
+  >({})
   const cargarLesiones = async () => {
 
     const { data } = await supabase
@@ -55,6 +64,104 @@ const [filtroPosicion, setFiltroPosicion] =
     setLesionesActivas(mapa)
   }
 
+  const cargarAsistenciaSemana = async (
+  plantelid: number,
+  fechaPartido: string
+) => {
+
+  const fecha = new Date(fechaPartido)
+
+  const inicioSemana = new Date(fecha)
+
+  const dia = inicioSemana.getDay()
+
+  const offset =
+    dia === 0
+      ? 6
+      : dia - 1
+
+  inicioSemana.setDate(
+    inicioSemana.getDate() - offset
+  )
+
+  inicioSemana.setHours(0, 0, 0, 0)
+
+  const { data: entrenamientos } =
+    await supabase
+      .from('sesion')
+      .select(`
+        sesionid
+      `)
+      .eq('plantelid', plantelid)
+      .eq('tipo', 'ENTRENAMIENTO')
+      .gte(
+        'fecha',
+        inicioSemana.toISOString()
+      )
+      .lt(
+        'fecha',
+        fechaPartido
+      )
+
+  const sesiones =
+    entrenamientos ?? []
+
+  const total =
+    sesiones.length
+
+  if (total === 0) {
+
+    setAsistenciaSemana({})
+
+    return
+  }
+
+  const sesionIds =
+    sesiones.map(
+      s => s.sesionid
+    )
+
+  const { data: asistencias } =
+    await supabase
+      .from('sesion_asistencia')
+      .select(`
+        personaid,
+        asistencia
+      `)
+      .in(
+        'sesionid',
+        sesionIds
+      )
+      .eq(
+        'asistencia',
+        true
+      )
+
+  const mapa: Record<
+    number,
+    {
+      asistencias: number
+      total: number
+    }
+  > = {}
+
+  ;(asistencias ?? []).forEach(a => {
+
+    if (!a.personaid) return
+
+    if (!mapa[a.personaid]) {
+
+      mapa[a.personaid] = {
+        asistencias: 0,
+        total
+      }
+    }
+
+    mapa[a.personaid].asistencias++
+  })
+
+  setAsistenciaSemana(mapa)
+}
   
 const prioridades: Record<number, string[]> = {
   1: ['PILARIZQ', 'PILARDER', 'HOOKER'],
@@ -93,14 +200,29 @@ const prioridades: Record<number, string[]> = {
   // LOADS
   // -------------------------
   const cargarSesion = async () => {
-    const { data } = await supabase
-      .from('sesion')
-      .select(`fecha, club, plantelid`)
-      .eq('sesionid', sesionid)
-      .single()
 
-    setSesion(data)
+  const { data } = await supabase
+    .from('sesion')
+    .select(`
+      fecha,
+      club,
+      plantelid
+    `)
+    .eq('sesionid', sesionid)
+    .single()
+
+  setSesion(data)
+
+  if (
+    data?.plantelid &&
+    data?.fecha
+  ) {
+    await cargarAsistenciaSemana(
+      data.plantelid,
+      data.fecha
+    )
   }
+}
 
   const cargarEquipoInfo = async () => {
     const { data } = await supabase
@@ -332,6 +454,8 @@ const prioridades: Record<number, string[]> = {
 
   const disponiblesFiltrados = [...disponibles]
 
+  
+  
   .filter(p => {
 
     const texto = `
@@ -369,6 +493,29 @@ const prioridades: Record<number, string[]> = {
 
     return rankA - rankB
   })
+
+  const getColorAsistencia = (
+  asistencias: number,
+  total: number
+) => {
+
+  if (total === 0)
+    return 'bg-gray-100 text-gray-600'
+
+  const ratio =
+    asistencias / total
+
+  if (ratio === 1)
+    return 'bg-green-100 text-green-700'
+
+  if (ratio >= 0.66)
+    return 'bg-lime-100 text-lime-700'
+
+  if (ratio >= 0.33)
+    return 'bg-yellow-100 text-yellow-700'
+
+  return 'bg-red-100 text-red-700'
+}
 
   // -------------------------
   // UI
@@ -781,26 +928,66 @@ const prioridades: Record<number, string[]> = {
             "
           >
 
-<div className="flex items-center justify-between">
+<div className="flex items-start justify-between">
 
-<div className="font-semibold">
-  {p.persona?.apellido},
-  {' '}
-  {p.persona?.nombre}
+  <div>
+
+    <div className="font-semibold">
+      {p.persona?.apellido},
+      {' '}
+      {p.persona?.nombre}
+    </div>
+
+    <div className="text-xs text-gray-500 mt-1">
+      {p.persona?.posicion || '-'}
+    </div>
+
+  </div>
+
+  <div className="flex items-center gap-2">
+
+    {(() => {
+
+      const info =
+        asistenciaSemana[
+          p.personaid
+        ] || {
+          asistencias: 0,
+          total:
+            Object.values(
+              asistenciaSemana
+            )[0]?.total || 0
+        }
+
+      return (
+        <div
+          className={`
+            px-2
+            py-1
+            rounded-full
+            text-[11px]
+            font-bold
+            ${getColorAsistencia(
+              info.asistencias,
+              info.total
+            )}
+          `}
+        >
+          {info.asistencias}/{info.total}
+        </div>
+      )
+    })()}
+
+    {lesionesActivas[p.personaid] && (
+      <img
+        src="/img/cruz_roja.png"
+        className="w-5 h-5"
+      />
+    )}
+
+  </div>
+
 </div>
-
-{lesionesActivas[p.personaid] && (
-  <img
-    src="/img/cruz_roja.png"
-    className="w-5 h-5"
-  />
-)}
-
-</div>
-
-            <div className="text-xs text-gray-500 mt-1">
-              {p.persona?.posicion || '-'}
-            </div>
 
           </button>
         ))}
