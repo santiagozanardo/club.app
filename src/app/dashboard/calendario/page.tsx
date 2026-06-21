@@ -828,38 +828,32 @@ export default function CalendarioGeneralPage() {
   }
 
   const cargarPresentes = async (
-    sesionesData: any[]
-  ) => {
-    if (!sesionesData.length) {
-      setPresentesMap({})
-      return
-    }
-
-    const sesionIds = sesionesData.map(
-      (s) => s.sesionid
-    )
-
-
-    
-    const { data } = await supabase
-      .from('sesion_asistencia')
-      .select(`
-        sesionid,
-        asistencia
-      `)
-      .in('sesionid', sesionIds)
-
-    const map: Record<number, number> = {}
-
-    ;(data ?? []).forEach((a) => {
-      if (!a.asistencia) return
-
-      map[a.sesionid] =
-        (map[a.sesionid] || 0) + 1
-    })
-
-    setPresentesMap(map)
+  sesionesData: any[]
+) => {
+  if (!sesionesData.length) {
+    setPresentesMap({})
+    return
   }
+
+  const sesionIds = sesionesData.map(
+    (s) => s.sesionid
+  )
+
+  const { data } = await supabase
+    .from('sesion_asistencia')
+    .select('sesionid')
+    .in('sesionid', sesionIds)
+    .eq('asistencia', true)
+
+  const map: Record<number, number> = {}
+
+  ;(data ?? []).forEach((a) => {
+    map[a.sesionid] =
+      (map[a.sesionid] || 0) + 1
+  })
+
+  setPresentesMap(map)
+}
 
   const cargarSesiones = async (
     clienteid: number | null
