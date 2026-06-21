@@ -106,8 +106,9 @@ const [filtroPosicion, setFiltroPosicion] =
   const sesiones =
     entrenamientos ?? []
 
-  const total =
-    sesiones.length
+  const total = sesiones.length
+
+setTotalEntrenamientosSemana(total)
 
   if (total === 0) {
 
@@ -137,6 +138,10 @@ const [filtroPosicion, setFiltroPosicion] =
         true
       )
 
+const [totalEntrenamientosSemana,
+  setTotalEntrenamientosSemana] =
+  useState(0)
+    
   const mapa: Record<
     number,
     {
@@ -949,15 +954,10 @@ const prioridades: Record<number, string[]> = {
     {(() => {
 
       const info =
-        asistenciaSemana[
-          p.personaid
-        ] || {
-          asistencias: 0,
-          total:
-            Object.values(
-              asistenciaSemana
-            )[0]?.total || 0
-        }
+  asistenciaSemana[p.personaid] || {
+    asistencias: 0,
+    total: totalEntrenamientosSemana
+  }
 
       return (
         <div
